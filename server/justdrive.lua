@@ -117,6 +117,7 @@ end)
 
 AddEvent("OnPlayerLeaveVehicle",function(ply,veh,seat)
    if GetPlayerPropertyValue(ply, "leaving")==nil then
+   if GetPlayerPropertyValue(ply, "newcar")==nil then
    local respawnpos = false
    local index = 0
       for i,v in ipairs(savedrespawn) do
@@ -131,7 +132,11 @@ AddEvent("OnPlayerLeaveVehicle",function(ply,veh,seat)
    else
     spawnveh(ply,GetPlayerPropertyValue(ply, "selectedveh"))
    end
+else
+   SetPlayerPropertyValue(ply,"newcar",nil,false)
+   spawnveh(ply,GetPlayerPropertyValue(ply, "selectedveh"),true)
    end
+end
 end)
 
 AddCommand("car",function(ply,id)
@@ -139,7 +144,8 @@ AddCommand("car",function(ply,id)
    if (id ~= nil and id > 0 and id < 26) then
       SetPlayerPropertyValue(ply, "selectedveh", id,false)
       if GetPlayerVehicle(ply)~=0 then
-           AddPlayerChat(ply,"Get out of your car to spawn the selected car")
+         SetPlayerPropertyValue(ply,"newcar",true,false)
+         RemovePlayerFromVehicle(ply)
       else
          spawnveh(ply,id)
       end
@@ -180,8 +186,8 @@ end)
 
 for k,v in pairs(tpcommands) do
 AddCommand(k,function(ply)
-   SetPlayerSpawnLocation(ply, v.posx, v.posy, v.posz, v.roty)
-   SetPlayerHealth(ply, 0)
+   SetVehicleLocation(GetPlayerVehicle(ply), v.posx, v.posy, v.posz)
+   SetVehicleRotation(GetPlayerVehicle(ply), 0,v.roty,0)
 end)
 end
 
@@ -191,7 +197,7 @@ AddCommand("locations",function(ply)
    end
 end)
 
-AddCommand("setrespawn",function(ply)
+function setrespawn(ply)
    local veh = GetPlayerVehicle(ply)
     for i,v in ipairs(savedrespawn) do
        if v.ply == ply then
@@ -211,14 +217,35 @@ AddCommand("setrespawn",function(ply)
     tbl.rz = rz
     table.insert(savedrespawn,tbl)
     AddPlayerChat(ply,"Respawn added , exit the car to go to the saved location")
+end
+
+function removerespawn(ply)
+   for i,v in ipairs(savedrespawn) do
+      if v.ply == ply then
+        AddPlayerChat(ply,"Respawn Location Removed")
+         table.remove(savedrespawn,i)
+      end
+   end
+end
+
+AddCommand("setrespawn",function(ply)
+   local veh = GetPlayerVehicle(ply) 
+   local x,y,z = GetVehicleLocation(veh)
+    CallRemoteEvent(ply,"setrespawnpos",x,y)
+    setrespawn(ply)
 end)
 
 AddCommand("removerespawn",function(ply)
-    for i,v in ipairs(savedrespawn) do
-       if v.ply == ply then
-         AddPlayerChat(ply,"Respawn Location Removed")
-          table.remove(savedrespawn,i)
-       end
-    end
+   CallRemoteEvent(ply,"setrespawnpos",nil,nil)
+    removerespawn(ply)
+end)
+
+AddRemoteEvent("cl_setrespawn",setrespawn)
+
+AddRemoteEvent("cl_removerespawn",removerespawn)
+
+AddRemoteEvent("gastp",function(ply)
+   SetVehicleLocation(GetPlayerVehicle(ply), tpcommands["gas"].posx, tpcommands["gas"].posy, tpcommands["gas"].posz)
+   SetVehicleRotation(GetPlayerVehicle(ply), 0,tpcommands["gas"].roty,0)
 end)
 
