@@ -111,7 +111,20 @@ AddEvent("OnPlayerSpawn", function(ply)
       SetPlayerPropertyValue(ply, "selectedveh", 1,false)
       spawnveh(ply,1,true)
    else
-      spawnveh(ply,GetPlayerPropertyValue(ply, "selectedveh"))
+      local respawnpos = false
+      local index = 0
+      for i,v in ipairs(savedrespawn) do
+         if v.ply == ply then
+            respawnpos=true
+            index = i
+         end
+      end
+      if respawnpos then
+         local tbl = savedrespawn[index]
+         spawnveh(ply,GetPlayerPropertyValue(ply, "selectedveh"),false,true,tbl.x,tbl.y,tbl.z,tbl.rx,tbl.ry,tbl.rz)
+      else
+         spawnveh(ply,GetPlayerPropertyValue(ply, "selectedveh")) 
+      end
    end
 end)
 
@@ -188,6 +201,8 @@ for k,v in pairs(tpcommands) do
 AddCommand(k,function(ply)
    SetVehicleLocation(GetPlayerVehicle(ply), v.posx, v.posy, v.posz)
    SetVehicleRotation(GetPlayerVehicle(ply), 0,v.roty,0)
+   SetVehicleLinearVelocity(GetPlayerVehicle(ply), 0, 0, 0 ,true)
+   SetVehicleAngularVelocity(GetPlayerVehicle(ply), 0, 0, 0 ,true)
 end)
 end
 
@@ -247,5 +262,14 @@ AddRemoteEvent("cl_removerespawn",removerespawn)
 AddRemoteEvent("gastp",function(ply)
    SetVehicleLocation(GetPlayerVehicle(ply), tpcommands["gas"].posx, tpcommands["gas"].posy, tpcommands["gas"].posz)
    SetVehicleRotation(GetPlayerVehicle(ply), 0,tpcommands["gas"].roty,0)
+   SetVehicleLinearVelocity(GetPlayerVehicle(ply), 0, 0, 0 ,true)
+   SetVehicleAngularVelocity(GetPlayerVehicle(ply), 0, 0, 0 ,true)
 end)
 
+AddRemoteEvent("returncar",function(ply)
+   local veh = GetPlayerVehicle(ply)
+   local rx,ry,rz = GetVehicleRotation(veh)
+   SetVehicleRotation(veh, 0,ry,0)
+   SetVehicleLinearVelocity(veh, 0, 0, 0 ,true)
+   SetVehicleAngularVelocity(veh, 0, 0, 0 ,true)
+end)

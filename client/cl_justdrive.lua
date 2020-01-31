@@ -32,6 +32,7 @@ AddEvent("OnRenderHUD",function()
     DrawText(0,430,"Y = /setrespawn")
     DrawText(0,445,"U = /removerespawn")
     DrawText(0,460,"G = teleport to gas")
+    DrawText(0,475,"R = return your car")
 end)
 
 AddEvent("OnKeyPress",function(key)
@@ -50,6 +51,9 @@ AddEvent("OnKeyPress",function(key)
          end
          if key == "G" then
             CallRemoteEvent("gastp")
+         end
+         if key == "R" then
+            CallRemoteEvent("returncar")
          end
     end
 end)

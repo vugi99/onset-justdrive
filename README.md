@@ -12,6 +12,7 @@
 * Y = /setrespawn
 * U = /removerespawn
 * G = teleport to gas
+* R = return your car
 
 #### Informations
 * cars are invincibles
